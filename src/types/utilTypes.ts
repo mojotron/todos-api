@@ -4,5 +4,6 @@ export enum ResponseStatusOption {
 }
 
 export enum CustomErrorNames {
+  badRequest = 'bad-request',
   formValidation = 'form-validation',
 }

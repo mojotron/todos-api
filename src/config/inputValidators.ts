@@ -17,7 +17,7 @@ export const signupValidator = (data: {
     password: passwordComplexity().required().label('password'),
   });
 
-  return schema.validate(data);
+  return schema.validate(data, { abortEarly: false });
 };
 
 export const loginValidator = (data: { email: string; password: string }) => {
