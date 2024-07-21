@@ -1,9 +1,11 @@
+import { compare, genSalt, hash } from 'bcryptjs';
 import mongoose from 'mongoose';
 
 type UserType = {
   username: string;
   email: string;
   password: string;
+  validatePassword: (enteredPassword: string) => Promise<boolean>;
 };
 
 const userSchema = new mongoose.Schema<UserType>(
@@ -14,6 +16,19 @@ const userSchema = new mongoose.Schema<UserType>(
   },
   { timestamps: true },
 );
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  const salt = await genSalt(10);
+  this.password = await hash(this.password, salt);
+});
+
+userSchema.methods.validatePassword = async function (enteredPassword: string) {
+  return await compare(enteredPassword, this.password);
+};
 
 const User = mongoose.model<UserType>('User', userSchema);
 

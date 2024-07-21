@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { signupValidator } from '../config/inputValidators';
+import { loginValidator, signupValidator } from '../config/inputValidators';
 import { CustomErrorNames, ResponseStatusOption } from '../types/utilTypes';
 import { StatusCodes } from 'http-status-codes';
 import User from '../models/userSchema';
@@ -7,6 +7,7 @@ import {
   throwInputFieldsError,
   throwCustomError,
 } from '../utils/throwCustomError';
+import { sign } from 'jsonwebtoken';
 
 const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -40,14 +41,53 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
+
+    const { error } = loginValidator({ email, password });
+    if (error) {
+      throwInputFieldsError(error.details.map((item) => item.message));
+    }
+
+    const user = await User.findOne({ email }).exec();
+
+    if (user === null || (await user.validatePassword(password)) === false) {
+      throwCustomError(
+        'Invalid Email or Password',
+        StatusCodes.BAD_REQUEST,
+        CustomErrorNames.badRequest,
+      );
+    }
+
+    // create tokens
+    const accessToken = sign(
+      { userId: user?._id },
+      process.env.JWT_ACCESS_SECRET as string,
+      { expiresIn: '10min' },
+    );
+
+    const refreshToken = sign(
+      { userId: user?._id },
+      process.env.JWT_REFRESH_SECRET as string,
+      { expiresIn: '7d' },
+    );
+    // CREATE HTTP only cookies
+    res.cookie(process.env.ACCESS_TOKEN_NAME as string, accessToken, {
+      maxAge: 1000 * 60 * 10,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'development' ? false : true,
+    });
+
+    res.cookie(process.env.REFRESH_TOKEN_NAME as string, refreshToken, {
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'development' ? false : true,
+    });
 
     return res.status(200).json({
       status: ResponseStatusOption.success,
-      message: 'OK',
-      username,
-      email,
-      password,
+      message: 'User Logged In Successfully',
     });
   } catch (error) {
     return next(error);

@@ -23,7 +23,7 @@ export const signupValidator = (data: {
 export const loginValidator = (data: { email: string; password: string }) => {
   const schema = Joi.object({
     email: Joi.string().email().required().label('email'),
-    password: passwordComplexity().required().label('password'),
+    password: Joi.string().required().label('password'),
   });
 
   return schema.validate(data);
