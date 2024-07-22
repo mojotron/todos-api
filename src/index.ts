@@ -3,11 +3,13 @@ import 'dotenv/config';
 import connectDB from './config/connect';
 import routes from './routes/index';
 import { notFound, errorHandler } from './middlewares/errorMiddlewares';
+import cookieParser from 'cookie-parser';
 
 const PORT = process.env.PORT;
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(routes);
 app.use(notFound);
