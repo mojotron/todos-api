@@ -11,9 +11,14 @@ import { sign } from 'jsonwebtoken';
 
 const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, confirmPassword } = req.body;
     // validate user input
-    const { error } = signupValidator({ username, email, password });
+    const { error } = signupValidator({
+      username,
+      email,
+      password,
+      confirmPassword,
+    });
     if (error) throwInputFieldsError(error.details.map((item) => item.message));
     // check if username and email are available
     const usernameExists = await User.findOne({ username }).lean().exec();

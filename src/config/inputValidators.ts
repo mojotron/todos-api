@@ -5,6 +5,7 @@ export const signupValidator = (data: {
   username: string;
   email: string;
   password: string;
+  confirmPassword: string;
 }) => {
   const schema = Joi.object({
     username: Joi.string()
@@ -15,6 +16,7 @@ export const signupValidator = (data: {
       .label('username'),
     email: Joi.string().email().required().label('email'),
     password: passwordComplexity().required().label('password'),
+    confirmPassword: Joi.ref('password'),
   });
 
   return schema.validate(data, { abortEarly: false });

@@ -15,6 +15,7 @@ app.use(
     origin: 'http://localhost:8000',
     methods: ['POST', 'GET'],
     allowedHeaders: ['Content-Type'],
+    credentials: true,
   }),
 );
 app.use(cookieParser());

@@ -36,9 +36,14 @@ export const throwInputFieldsError = (inputFields: string[]) => {
   const inputErrorObject: InputFieldsMessageErrors = {};
   // Joi return error message in form '"label" error message'
   inputFields.forEach((item) => {
-    const parts = item.split(' ');
-    const label = parts[0].replace(/"/g, '');
-    inputErrorObject[label] = `${label} ${parts.slice(1).join(' ')}`;
+    if (item.includes('confirmPassword')) {
+      inputErrorObject['confirmPassword'] =
+        `password and confirm password must be equal`;
+    } else {
+      const parts = item.split(' ');
+      const label = parts[0].replace(/"/g, '');
+      inputErrorObject[label] = `${label} ${parts.slice(1).join(' ')}`;
+    }
   });
 
   customError.inputFields = inputErrorObject;
