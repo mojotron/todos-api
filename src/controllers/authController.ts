@@ -7,7 +7,7 @@ import {
   throwInputFieldsError,
   throwCustomError,
 } from '../utils/throwCustomError';
-import { sign } from 'jsonwebtoken';
+import { JsonWebTokenError, sign, verify } from 'jsonwebtoken';
 
 const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -75,14 +75,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       process.env.JWT_REFRESH_SECRET as string,
       { expiresIn: '7d' },
     );
-    // CREATE HTTP only cookies
-    res.cookie(process.env.ACCESS_TOKEN_NAME as string, accessToken, {
-      maxAge: 1000 * 60 * 10,
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'development' ? false : true,
-    });
-
+    // CREATE HTTP only cookie for  refresh token
     res.cookie(process.env.REFRESH_TOKEN_NAME as string, refreshToken, {
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
@@ -93,10 +86,53 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json({
       status: ResponseStatusOption.success,
       message: 'User Logged In Successfully',
+      accessToken,
     });
   } catch (error) {
     return next(error);
   }
 };
 
-export { signup, login };
+const refreshToken = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const refreshToken = req.cookies[process.env.REFRESH_TOKEN_NAME as string];
+    const decoded = verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET as string,
+    ) as { userId: string };
+
+    const accessToken = sign(
+      { userId: decoded.userId },
+      process.env.JWT_ACCESS_SECRET as string,
+      {
+        expiresIn: '10m',
+      },
+    );
+    return res.status(201).json({
+      status: ResponseStatusOption.success,
+      message: 'User Refreshed Token Successfully',
+      accessToken,
+    });
+  } catch (error) {
+    if (error instanceof JsonWebTokenError) {
+      return next(new Error('invalid token'));
+    }
+    return next(error);
+  }
+};
+
+const logout = (req: Request, res: Response, next: NextFunction) => {
+  res.cookie(process.env.REFRESH_TOKEN_NAME as string, '', {
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'development' ? false : true,
+  });
+
+  res.status(200).json({
+    status: ResponseStatusOption.success,
+    message: 'User Logged out Successfully',
+  });
+};
+
+export { signup, login, refreshToken, logout };
