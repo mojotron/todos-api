@@ -1,8 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import { verify } from 'jsonwebtoken';
 import renewAccessToken from '../utils/renewAccessToken';
+import { throwCustomError } from 'src/utils/throwCustomError';
+import { StatusCodes } from 'http-status-codes';
+import { CustomErrorNames } from 'src/types/utilTypes';
 //@ts-ignore
-const validateUser = (req: Request, res: Response, next: NextFunction) => {
+const validateUserViaCookie = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   console.log('hello');
 
   const accessToken = req.cookies[process.env.ACCESS_TOKEN_NAME as string];
@@ -29,4 +36,33 @@ const validateUser = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default validateUser;
+const validateUserViaBearer = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { authorization } = req.headers;
+  try {
+    if (authorization === undefined || !authorization.startsWith('Bearer ')) {
+      throwCustomError(
+        'Invalid Access Token',
+        StatusCodes.UNAUTHORIZED,
+        CustomErrorNames.unauthorized,
+      );
+    }
+
+    const accessToken = authorization?.split(' ')[1];
+
+    const decoded = verify(
+      accessToken as string,
+      process.env.ACCESS_TOKEN_NAME as string,
+    ) as { userId: string };
+    // @ts-ignore
+    req.user = { userId: decoded.userId };
+    next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export { validateUserViaCookie, validateUserViaBearer };
