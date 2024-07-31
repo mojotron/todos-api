@@ -35,10 +35,18 @@ const errorHandler = (
     });
   }
 
+  if (errorObject.errorName === CustomErrorNames.unauthorized) {
+    return res.status(errorObject.statusCode).json({
+      status: ResponseStatusOption.error,
+      message: errorObject.message,
+      errorName: errorObject.errorName,
+    });
+  }
+
   return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     status: ResponseStatusOption.error,
     message: 'Internal Server Error',
-    errors: process.env.NODE_ENV === 'development' ? err.stack : null,
+    //errors: process.env.NODE_ENV === 'development' ? err.stack : null,
   });
 };
 

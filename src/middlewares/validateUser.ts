@@ -1,22 +1,25 @@
 import { NextFunction, Request, Response } from 'express';
 import { JsonWebTokenError, verify } from 'jsonwebtoken';
-import renewAccessToken from '../utils/renewAccessToken';
-import { throwCustomError } from 'src/utils/throwCustomError';
 import { StatusCodes } from 'http-status-codes';
-import { CustomErrorNames } from 'src/types/utilTypes';
+import renewAccessToken from '../utils/renewAccessToken';
+import { CustomErrorType, throwCustomError } from '../utils/throwCustomError';
+import { CustomErrorNames } from '../types/utilTypes';
 
-//@ts-ignore
 const validateUser = (req: Request, res: Response, next: NextFunction) => {
   try {
     const accessToken = req.cookies[process.env.ACCESS_TOKEN_NAME as string];
-    if (!accessToken) {
-      console.log('here');
 
+    if (!accessToken) {
       if (renewAccessToken(req, res)) {
-        console.log('here 2');
+        console.log('renew token');
         return next();
+      } else {
+        throwCustomError(
+          'invalid refresh token',
+          StatusCodes.UNAUTHORIZED,
+          CustomErrorNames.unauthorized,
+        );
       }
-      return res.status(401).json({ message: 'invalid refres token' });
     }
     const decoded = verify(
       accessToken,
@@ -24,11 +27,15 @@ const validateUser = (req: Request, res: Response, next: NextFunction) => {
     ) as { userId: string };
     // @ts-ignore
     req.user = { userId: decoded.userId };
-    next();
+    return next();
   } catch (error) {
     if (error instanceof JsonWebTokenError) {
-      return res.status(403).json({ msg: 'invalid access token' });
+      const err = new Error('invalid access token') as CustomErrorType;
+      err.errorName = CustomErrorNames.unauthorized;
+      err.statusCode = StatusCodes.UNAUTHORIZED;
+      return next(err);
     }
+    return next(error);
   }
 };
 

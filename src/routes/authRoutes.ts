@@ -9,7 +9,9 @@ router.post('/login', login);
 router.delete('/logout', logout);
 
 router.get('/test', validateUser, (req, res) => {
-  return res.status(200).json({ message: 'test successful' });
+  // @ts-ignore
+  const { userId } = req.user;
+  return res.status(200).json({ message: 'test successful', userId });
 });
 
 export default router;
