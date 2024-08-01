@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: 'http://localhost:8000',
-    methods: ['POST', 'GET'],
+    methods: ['POST', 'GET', 'DELETE'],
     allowedHeaders: ['Content-Type'],
     credentials: true,
   }),

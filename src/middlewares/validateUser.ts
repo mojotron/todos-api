@@ -11,7 +11,6 @@ const validateUser = (req: Request, res: Response, next: NextFunction) => {
 
     if (!accessToken) {
       if (renewAccessToken(req, res)) {
-        console.log('renew token');
         return next();
       } else {
         throwCustomError(
