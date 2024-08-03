@@ -1,12 +1,18 @@
 import mongoose from 'mongoose';
 
 type ProjectType = {
-  name: string;
+  projectName: string;
+  userId: mongoose.Schema.Types.ObjectId;
 };
 
 const projectSchema = new mongoose.Schema<ProjectType>(
   {
-    name: { type: String, required: true },
+    projectName: { type: String, required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
   },
   { timestamps: true },
 );

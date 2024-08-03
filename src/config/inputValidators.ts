@@ -30,3 +30,11 @@ export const loginValidator = (data: { email: string; password: string }) => {
 
   return schema.validate(data);
 };
+
+export const projectValidator = (data: { projectName: string }) => {
+  const schema = Joi.object({
+    projectName: Joi.string().required().label('project name'),
+  });
+
+  return schema.validate(data);
+};
