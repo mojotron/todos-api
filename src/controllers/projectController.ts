@@ -26,6 +26,7 @@ const createProject = async (
       return res.status(StatusCodes.CREATED).json({
         status: ResponseStatusOption.success,
         message: 'project created successfully',
+        project: { _id: project._id, projectName: project.projectName },
       });
     } else {
       throwCustomError(
