@@ -21,6 +21,12 @@ const createProject = async (
     if (error) {
       throwInputFieldsError(error.details.map((item) => item.message));
     }
+    // check if user have project with same name
+    const projectExists = await Project.findOne({ userId, projectName });
+    if (projectExists) {
+      throwInputFieldsError(['"projectName" already exists']);
+    }
+    //
     const project = await Project.create({ projectName, userId });
     if (project) {
       return res.status(StatusCodes.CREATED).json({
