@@ -38,3 +38,9 @@ export const projectValidator = (data: { projectName: string }) => {
 
   return schema.validate(data);
 };
+
+export const taskValidator = (data: {}) => {
+  const schema = Joi.object({});
+
+  return schema.validate(data);
+};
