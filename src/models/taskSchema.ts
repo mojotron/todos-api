@@ -1,22 +1,22 @@
 import mongoose from 'mongoose';
 
-type TaskDescription = {
-  checked: boolean;
-  text: string;
-};
-
 type TaskType = {
+  userId: mongoose.Schema.Types.ObjectId;
   title: string;
   deadline: null | Date;
   priority: 'low' | 'high' | 'critical';
   category: 'text' | 'list' | 'checkbox';
-  description: TaskDescription[];
+  assignmentId: mongoose.Schema.Types.ObjectId;
   projectId: mongoose.Schema.Types.ObjectId;
-  userId: mongoose.Schema.Types.ObjectId;
 };
 
 const taskSchema = new mongoose.Schema<TaskType>(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     title: { type: String, required: true, unique: true },
     deadline: { type: Date, required: true, unique: true },
     priority: {
@@ -30,11 +30,10 @@ const taskSchema = new mongoose.Schema<TaskType>(
       enum: {
         values: ['text', 'list', 'checkbox'],
       },
-      default: 'text',
       required: true,
     },
-    description: {
-      type: [{ checked: { type: Boolean }, text: { type: String } }],
+    assignmentId: {
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     projectId: {
@@ -42,11 +41,6 @@ const taskSchema = new mongoose.Schema<TaskType>(
       ref: 'Project',
       required: false,
       default: null,
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
     },
   },
   { timestamps: true },
