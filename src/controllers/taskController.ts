@@ -32,7 +32,7 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
 
     const task = await Task.create({
       title,
-      deadline,
+      deadline: new Date(deadline),
       category,
       priority,
       projectId,
@@ -50,6 +50,8 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
       task,
     });
   } catch (error) {
+    console.log(error);
+
     return next(error);
   }
 };
