@@ -1,19 +1,32 @@
 import mongoose from 'mongoose';
 
-type TextTaskType = {
-  assignment: string;
+type TaskAssignmentType = {
+  text: string;
+  list: string[];
+  checkbox: { checked: boolean; value: string }[];
 };
 
-const textTaskSchema = new mongoose.Schema<TextTaskType>(
+const taskAssignmentSchema = new mongoose.Schema<TaskAssignmentType>(
   {
-    assignment: {
+    text: {
       type: String,
+      required: true,
+    },
+    list: {
+      type: [String],
+      required: true,
+    },
+    checkbox: {
+      type: [{ checked: { type: Boolean }, value: { type: String } }],
       required: true,
     },
   },
   { timestamps: true },
 );
 
-const TextTask = mongoose.model<TextTaskType>('TextTask', textTaskSchema);
+const TaskAssignment = mongoose.model<TaskAssignmentType>(
+  'TextTask',
+  taskAssignmentSchema,
+);
 
-export default TextTask;
+export default TaskAssignment;

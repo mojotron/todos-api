@@ -1,33 +1,35 @@
+import { Document } from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { CustomErrorNames, ResponseStatusOption } from '../types/utilTypes';
 import TextTask from '../models/textTaskSchema';
 import Task from '../models/taskSchema';
 import { throwCustomError } from '../utils/throwCustomError';
+import { Mongoose } from 'mongoose';
 
 const createTask = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // @ts-ignore
     const { userId } = req.user;
-    const { title, deadline, category, priority, projectId, assignment } =
-      req.body;
-    console.log('1');
+    const {
+      title,
+      deadline,
+      category,
+      priority,
+      projectId,
+      assignment: { text },
+    } = req.body;
 
     // create assignment
-    let assignmentDoc = null;
     if (category === 'text') {
-      console.log('2');
-      assignmentDoc = await TextTask.create({ assignment });
-    }
-
-    console.log(assignmentDoc);
-
-    if (assignmentDoc === null) {
-      throwCustomError(
-        'no assignment doc created',
-        400,
-        CustomErrorNames.badRequest,
-      );
+      const textDoc = await TextTask.create({ assignment: text });
+      if (textDoc === null) {
+        throwCustomError(
+          'no assignment doc created',
+          400,
+          CustomErrorNames.badRequest,
+        );
+      }
     }
 
     const task = await Task.create({
@@ -36,8 +38,7 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
       category,
       priority,
       projectId,
-      assignmentId: assignmentDoc?._id,
-      userId,
+      assignmentId: userId,
     });
 
     if (!task) {
@@ -47,6 +48,7 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(StatusCodes.CREATED).json({
       status: ResponseStatusOption.success,
       message: 'task created',
+      //task,
       task,
     });
   } catch (error) {
