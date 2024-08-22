@@ -11,15 +11,6 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
     const { userId } = req.user;
     const { title, deadline, category, priority, projectId, assignment } =
       req.body;
-    console.log(
-      'hello there',
-      title,
-      deadline,
-      category,
-      priority,
-      projectId,
-      assignment,
-    );
 
     const task = await Task.create({
       userId,
@@ -48,4 +39,22 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createTask };
+const getTasks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // @ts-ignore
+    const { userId } = req.user;
+
+    const tasks = await Task.find({ userId });
+    return res
+      .status(StatusCodes.OK)
+      .json({
+        status: ResponseStatusOption.success,
+        messages: 'get all user tasks',
+        tasks,
+      });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export { createTask, getTasks };
