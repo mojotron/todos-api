@@ -33,8 +33,6 @@ const createTask = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
   } catch (error) {
-    console.log(error);
-
     return next(error);
   }
 };
@@ -45,16 +43,40 @@ const getTasks = async (req: Request, res: Response, next: NextFunction) => {
     const { userId } = req.user;
 
     const tasks = await Task.find({ userId });
-    return res
-      .status(StatusCodes.OK)
-      .json({
-        status: ResponseStatusOption.success,
-        messages: 'get all user tasks',
-        tasks,
-      });
+
+    return res.status(StatusCodes.OK).json({
+      status: ResponseStatusOption.success,
+      messages: 'get all user tasks',
+      tasks,
+    });
   } catch (error) {
     return next(error);
   }
 };
 
-export { createTask, getTasks };
+const deleteTask = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // @ts-ignore
+    const { userId } = req.user;
+    const { taskId } = req.params;
+    const deletedTask = await Task.deleteOne({ userId, _id: taskId });
+    return res.status(StatusCodes.ACCEPTED).json({
+      status: ResponseStatusOption.success,
+      message: 'task deleted',
+      deletedTask,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return next(error);
+  }
+};
+
+const editTask = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export { createTask, getTasks, deleteTask, editTask };
