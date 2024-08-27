@@ -74,6 +74,31 @@ const deleteTask = async (req: Request, res: Response, next: NextFunction) => {
 
 const editTask = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // @ts-ignore
+    const { userId } = req.user;
+    const { taskId } = req.params;
+    const { title, deadline, category, priority, projectId, assignment } =
+      req.body;
+
+    const taskExists = await Task.findOne({ _id: taskId, userId });
+    if (taskExists === null) {
+      throwCustomError(
+        'task does not exist',
+        StatusCodes.BAD_REQUEST,
+        CustomErrorNames.badRequest,
+      );
+    }
+
+    await Task.updateOne(
+      { _id: taskId, userId },
+      { title, deadline, category, priority, projectId, assignment },
+      { new: false },
+    );
+
+    return res.status(StatusCodes.OK).json({
+      status: ResponseStatusOption.success,
+      message: 'task edited',
+    });
   } catch (error) {
     return next(error);
   }
