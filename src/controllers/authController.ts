@@ -67,24 +67,24 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     const accessToken = sign(
       { userId: user?._id },
       process.env.JWT_ACCESS_SECRET as string,
-      { expiresIn: '1m' },
+      { expiresIn: '10m' },
     );
 
     const refreshToken = sign(
       { userId: user?._id },
       process.env.JWT_REFRESH_SECRET as string,
-      { expiresIn: '3m' },
+      { expiresIn: '3d' },
     );
     // CREATE HTTP only cookies
     res.cookie(process.env.ACCESS_TOKEN_NAME as string, accessToken, {
-      maxAge: 1000 * 60,
+      maxAge: 1000 * 60 * 10,
       httpOnly: true,
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'development' ? false : true,
     });
 
     res.cookie(process.env.REFRESH_TOKEN_NAME as string, refreshToken, {
-      maxAge: 1000 * 60 * 3,
+      maxAge: 1000 * 60 * 60 * 24 * 3,
       httpOnly: true,
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'development' ? false : true,
@@ -101,7 +101,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
 const logout = (req: Request, res: Response, next: NextFunction) => {
   res.cookie(process.env.ACCESS_TOKEN_NAME as string, '', {
-    maxAge: 1000 * 60,
+    maxAge: 0,
     httpOnly: true,
     sameSite: 'strict',
     secure: process.env.NODE_ENV === 'development' ? false : true,

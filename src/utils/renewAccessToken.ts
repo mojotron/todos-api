@@ -16,10 +16,10 @@ const renewAccessToken = (req: Request, res: Response): boolean => {
       const accessToken = sign(
         { userId: decoded.userId },
         process.env.JWT_ACCESS_SECRET as string,
-        { expiresIn: '1m' },
+        { expiresIn: '10m' },
       );
       res.cookie(process.env.ACCESS_TOKEN_NAME as string, accessToken, {
-        maxAge: 1000 * 60,
+        maxAge: 1000 * 60 * 10,
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'development' ? false : true,
